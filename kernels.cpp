@@ -7,8 +7,6 @@ Kernels::Kernels()
 
 Mat Kernels::kernel(int size, double angle, double sigma1, double sigma2, FunctionType type) {
     Mat k = Mat::zeros(size, size, CV_64F);
-    double meanS = 0;
-    double sum = 0;
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
             int x = i - (int)(size/2);
@@ -25,25 +23,58 @@ Mat Kernels::kernel(int size, double angle, double sigma1, double sigma2, Functi
                     k.at<double>(i, j) = 0.25 * kernelRadialFunction(x, y, sigma1, sigma2);
                     break;
             }
+        }
+    }
+
+    k = normalization(k);
+
+    return k;
+}
+
+Mat Kernels::normalization(Mat k) {
+    double meanS = 0;
+    double sum = 0;
+
+    for (int i = 0; i < k.rows; i++) {
+        for (int j = 0; j < k.cols; j++) {
             meanS += k.at<double>(i, j);
         }
     }
 
-    meanS /= size * size;
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-            k.at<double>(i, j) -= meanS;
+    meanS /= k.cols * k.rows;
+    for (int i = 0; i < k.rows; i++) {
+        for (int j = 0; j < k.cols; j++) {
+            k.at<double>(i, j) -= meanS;            //zero mean
             sum += fabs(k.at<double>(i, j));
         }
     }
 
-    for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
+    for (int i = 0; i < k.rows; i++) {
+        for (int j = 0; j < k.cols; j++) {
             k.at<double>(i ,j) /= sum;
 //            std::cout << k.at<double>(i, j) << '\t';
         }
     }
+    return k;
+}
 
+Mat Kernels::normalization2(Mat k) {
+    double sum = 0.0;
+
+    for (int i = 0; i < k.rows; i++) {
+        for (int j = 0; j < k.cols; j++) {
+            if (k.at<double>(i, j) < 0.00001) {
+                k.at<double>(i, j) = 0;
+            }
+            sum += k.at<double>(i, j);
+        }
+    }
+
+    for (int i = 0; i < k.rows; i++) {
+        for (int j = 0; j < k.cols; j++) {
+            k.at<double>(i, j) /= sum;
+        }
+    }
     return k;
 }
 

@@ -36,7 +36,7 @@ void FilterProcessor::filterImage(Mat image, vector<Mat> kernelsVector, OutputAr
 
 
     int attempts = 5;
-    int clusterNumber = 10;
+    int clusterNumber = Constants::CLUSTER_NUMBER;
 
     kmeans(vectorsTemp,
            clusterNumber,
