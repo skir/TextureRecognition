@@ -11,29 +11,28 @@ FilterProcessor::FilterProcessor()
 void FilterProcessor::filterImage(Mat image, vector<Mat> kernelsVector, OutputArray vectors, OutputArray centers, OutputArray labels) {
 
     Mat dst, dst32;
-    Mat vectorsTemp = Mat::zeros(image.cols * image.rows, kernelsVector.size(), CV_32F);    //CV_32F is for weak kmeans
-//    imwrite("im.png",kernel(11, M_PI / 4 ) * 255);
+    Mat vectorsTemp = Mat::zeros(image.cols * image.rows, kernelsVector.size() * 3, CV_32F);    //CV_32F is for weak kmeans
 
-    for ( int i = 0; i < kernelsVector.size(); i++) {
-        filter2D(image, dst, CV_32F, kernelsVector[i]);
-//        dst32 = imread("dst" + to_string(i) + ".png");
-        int s = 0;
-//        dst.convertTo(dst, CV_32F);
-        for (int j = 0; j < dst.rows; j++) {
-            for (int k = 0; k < dst.cols; k++) {
-                vectorsTemp.at<float>(s, i) = dst.at<float>(j, k);
-//                cout<<typeToString(dst32.type())<<endl;
-                s++;
+    vector<Mat> channels;
+    split(image, channels);
+#pragma omp parallel for
+    for (int channel = 0; channel < channels.size(); channel++) {
+        for (int i = 0; i < kernelsVector.size(); i++) {
+            filter2D(channels[channel], dst, CV_32F, kernelsVector[i]);
+
+            int s = 0;
+            for (int j = 0; j < dst.rows; j++) {
+                for (int k = 0; k < dst.cols; k++) {
+                    vectorsTemp.at<float>(s, i + kernelsVector.size() * channel) = dst.at<float>(j, k);
+                    s++;
+                }
             }
-        }
 
-        imwrite("dst" + to_string(i) + ".png", dst);
+//            imwrite("dst" + to_string(i) + ".png", dst);
+        }
     }
 
-//    vectorsTemp.convertTo(dst, CV_8U);
     vectorsTemp.copyTo(vectors);
-//    imwrite("vectors.png", dst);
-
 
     int attempts = 5;
     int clusterNumber = Constants::CLUSTER_NUMBER;
@@ -54,26 +53,36 @@ vector<Mat> FilterProcessor::getTextonsVector(Mat centers, Mat kernels) {
     vector<Mat> textons;
     centers.convertTo(centers, CV_64F);
     for (int i = 0; i < centers.rows; i++) {
-        cout<<kernels.cols<<'\t'<<kernels.rows<<'\t'<<centers.row(i).cols<<endl;
-        Mat result = centers.row(i) * kernels;
-        Mat image(Constants::KERNEL_SIZE, Constants::KERNEL_SIZE, CV_64F);
-        for (int j = 0; j < image.rows; j++) {
-            for (int k = 0; k < image.cols; k++) {
-                image.at<double>(j,k) = result.at<double>(0, j * Constants::KERNEL_SIZE + k);
+        vector<Mat> subRows;
+        Mat row = centers.row(i);
+        subRows.push_back(row(Range::all(), Range(0, kernels.rows)));
+        subRows.push_back(row(Range::all(), Range(kernels.rows, kernels.rows * 2)));
+        subRows.push_back(row(Range::all(), Range(kernels.rows * 2, kernels.rows * 3)));
+        vector<Mat> subTextons;
+        for (int channel = 0; channel < subRows.size(); channel++) {
+            Mat result = subRows[channel] * kernels;
+            Mat image(Constants::KERNEL_SIZE, Constants::KERNEL_SIZE, CV_64F);
+            for (int j = 0; j < image.rows; j++) {
+                for (int k = 0; k < image.cols; k++) {
+                    image.at<double>(j,k) = result.at<double>(0, j * Constants::KERNEL_SIZE + k);
+                }
             }
+            image.convertTo(image, CV_8U);
+            subTextons.push_back(image);
         }
-        image.convertTo(image, CV_8U);
-        textons.push_back(image);
-        imwrite("texton" + to_string(i) +".png", image);
+        Mat merged;
+        merge(subTextons, merged);
+        textons.push_back(merged);
+        imwrite("texton" + to_string(i) +".png", merged);
     }
     return textons;
 }
 
-vector<Mat> FilterProcessor::mapPixelToTexton(Mat centers, Mat image, Mat vectors, Mat labels) {
+vector<Mat> FilterProcessor::mapPixelToTexton(Mat image, Mat vectors, Mat labels) {
     vector<Mat> result;
 
-    for (int i = 0; i < centers.rows; i++) {
-        Mat mat = Mat::ones(image.rows, image.cols, CV_8U);
+    for (int i = 0; i < Constants::CLUSTER_NUMBER; i++) {
+        Mat mat = Mat::ones(image.rows, image.cols, CV_8UC3);
         result.push_back(mat);
     }
 
@@ -89,11 +98,11 @@ vector<Mat> FilterProcessor::mapPixelToTexton(Mat centers, Mat image, Mat vector
 //                    cluster = k;
 //                }
 //            }
-            result[labels.at<int>(i * image.cols + j)].at<unsigned char>(i, j) = image.at<unsigned char>(i, j);
+            result[labels.at<int>(i * image.cols + j)].at<Vec3b>(i, j) = image.at<Vec3b>(i, j);
         }
     }
 
-    for (int i = 0; i < centers.rows; i ++) {
+    for (int i = 0; i < Constants::CLUSTER_NUMBER; i ++) {
         imwrite("mat" + to_string(i) + ".png", result[i]);
     }
     return result;

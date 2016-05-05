@@ -21,7 +21,7 @@ public:
 
     static void filterImage(Mat image, vector<Mat> kernel, OutputArray vectors, OutputArray centers, OutputArray labels);
     static float distance(Mat vector1, Mat vector2);
-    static vector<Mat> mapPixelToTexton(Mat centers, Mat image, Mat vectors, Mat labels);
+    static vector<Mat> mapPixelToTexton(Mat image, Mat vectors, Mat labels);
     static vector<Mat> getTextonsVector(Mat centers, Mat kernels);
 
 };

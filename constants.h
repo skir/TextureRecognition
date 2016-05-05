@@ -8,7 +8,7 @@ class Constants
 public:
     Constants();
 
-    static const int KERNEL_SIZE = 13;  //49
+    static const int KERNEL_SIZE = 49 ;  //49
 
     static const int CLUSTER_NUMBER = 3;    //3
 

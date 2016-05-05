@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     namedWindow( "window_name", CV_WINDOW_AUTOSIZE );
 //    namedWindow( "window_name2", CV_WINDOW_AUTOSIZE );
 
-    Mat image = imread(files[0], CV_LOAD_IMAGE_GRAYSCALE);
+    Mat image = imread(files[0], CV_LOAD_IMAGE_COLOR);//GRAYSCALE);
 //    bitwise_not(image, image);        //invert
     imwrite("image.png", image);
 
@@ -47,30 +47,27 @@ int main(int argc, char *argv[])
 
     vector<Mat> kernelsVector;
     Mat k = Mat::zeros(Constants::KERNEL_SIZE, Constants::KERNEL_SIZE, CV_64F);
-//    for (int i = 0; i < 4; i++) {
-//        k = Kernels::kernel(Constants::KERNEL_SIZE, 0, SIGMAS[i], 0, Kernels::Radial);
-//        kernelsVector.push_back(k);
-//        imwrite("kernel00" + to_string(i) + ".png", k *1000);
-//    }
-//    for (int i = 0; i < 4; i++) {
-//        k = Kernels::kernel(Constants::KERNEL_SIZE, 0, 3 * SIGMAS[i], 0, Kernels::Radial);
-//        kernelsVector.push_back(k);
-//        imwrite("kernel01" + to_string(i) + ".png", k *1000);
-//    }
-    for (int j = 0; j < 1; j++) {
+    for (int i = 0; i < 4; i++) {
+        k = Kernels::kernel(Constants::KERNEL_SIZE, 0, SIGMAS[i], 0, Kernels::Radial);
+        kernelsVector.push_back(k);
+        imwrite("kernel00" + to_string(i) + ".png", k *1000);
+    }
+    for (int i = 0; i < 4; i++) {
+        k = Kernels::kernel(Constants::KERNEL_SIZE, 0, 3 * SIGMAS[i], 0, Kernels::Radial);
+        kernelsVector.push_back(k);
+        imwrite("kernel01" + to_string(i) + ".png", k *1000);
+    }
+    for (int j = 0; j < 3; j++) {
         for (int i = 0; i < 6; i++){
             k = Kernels::kernel(Constants::KERNEL_SIZE, i * M_PI / 6, SIGMAS[j], 3 * SIGMAS[j], Kernels::Even);   //[1, 3]; [1.5, 2]
             kernelsVector.push_back(k);
             imwrite("kernel1" + to_string(j) + to_string(i) + ".png", k * 1000);
-//            if (j == 2) {
-//                cout << k <<endl;
-//            }
         }
-//        for (int i = 0; i < 6; i++){
-//            k = Kernels::kernel(Constants::KERNEL_SIZE, i * M_PI / 6, SIGMAS[j], 3 * SIGMAS[j], Kernels::Odd);
-//            kernelsVector.push_back(k);
-//            imwrite("kernel2" + to_string(j) + to_string(i) + ".png", k *1000);
-//        }
+        for (int i = 0; i < 6; i++){
+            k = Kernels::kernel(Constants::KERNEL_SIZE, i * M_PI / 6, SIGMAS[j], 3 * SIGMAS[j], Kernels::Odd);
+            kernelsVector.push_back(k);
+            imwrite("kernel2" + to_string(j) + to_string(i) + ".png", k *1000);
+        }
     }
 //M_PI / 2 - M_PI / 18 + i * M_PI / 18
 
@@ -99,12 +96,11 @@ int main(int argc, char *argv[])
 //    cout << "label " << predict(net, centers.row(1));
 //    cout << "label " << predict(net, centers.row(2));
 
-    vector<Mat> maps = FilterProcessor::mapPixelToTexton(centers, image, vectors, labels);
+    vector<Mat> maps = FilterProcessor::mapPixelToTexton(image, vectors, labels);
     for (int i = 0; i < maps.size(); i++) {
         imwrite("sub" + to_string(i) + ".png", ImageUtils::substract(image, maps[i]));
     }
 
-    centers.convertTo(centers, CV_64F);
     Mat kernels = Kernels::convertVectorToMat(kernelsVector);
 //    cout<<typeToString(centers.type()) + " " + typeToString(kernels.type())<<endl;
     FilterProcessor::getTextonsVector(centers, kernels.inv(DECOMP_SVD));

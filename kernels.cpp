@@ -34,10 +34,14 @@ Mat Kernels::kernel(int size, double angle, double sigma1, double sigma2, Functi
 Mat Kernels::normalization(Mat k) {
     double meanS = 0;
     double sum = 0;
+    double min = 0;
 
     for (int i = 0; i < k.rows; i++) {
         for (int j = 0; j < k.cols; j++) {
             meanS += k.at<double>(i, j);
+            if (k.at<double>(i, j) < min) {
+                min = k.at<double>(i, j);
+            }
         }
     }
 
@@ -45,6 +49,7 @@ Mat Kernels::normalization(Mat k) {
     for (int i = 0; i < k.rows; i++) {
         for (int j = 0; j < k.cols; j++) {
             k.at<double>(i, j) -= meanS;            //zero mean
+//            k.at<double>(i, j) -= min;
             sum += fabs(k.at<double>(i, j));
         }
     }
