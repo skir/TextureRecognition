@@ -11,7 +11,7 @@ FilterProcessor::FilterProcessor()
 void FilterProcessor::filterImage(Mat image, vector<Mat> kernelsVector, OutputArray vectors, OutputArray centers, OutputArray labels) {
 
     Mat dst, dst32;
-    Mat vectorsTemp = Mat::zeros(image.cols * image.rows, kernelsVector.size() * 3, CV_32F);    //CV_32F is for weak kmeans
+    Mat vectorsTemp = Mat::zeros(image.cols * image.rows, kernelsVector.size() * image.channels(), CV_32F);    //CV_32F is for weak kmeans
 
     vector<Mat> channels;
     split(image, channels);
@@ -51,16 +51,13 @@ void FilterProcessor::filterImage(Mat image, vector<Mat> kernelsVector, OutputAr
 
 vector<Mat> FilterProcessor::getTextonsVector(Mat centers, Mat kernels) {
     vector<Mat> textons;
+    int channels = centers.cols / kernels.rows;
     centers.convertTo(centers, CV_64F);
     for (int i = 0; i < centers.rows; i++) {
-        vector<Mat> subRows;
         Mat row = centers.row(i);
-        subRows.push_back(row(Range::all(), Range(0, kernels.rows)));
-        subRows.push_back(row(Range::all(), Range(kernels.rows, kernels.rows * 2)));
-        subRows.push_back(row(Range::all(), Range(kernels.rows * 2, kernels.rows * 3)));
         vector<Mat> subTextons;
-        for (int channel = 0; channel < subRows.size(); channel++) {
-            Mat result = subRows[channel] * kernels;
+        for (int channel = 0; channel < channels; channel++) {
+            Mat result = row(Range::all(), Range(channel * kernels.rows, (channel + 1) * kernels.rows)) * kernels;
             Mat image(Constants::KERNEL_SIZE, Constants::KERNEL_SIZE, CV_64F);
             for (int j = 0; j < image.rows; j++) {
                 for (int k = 0; k < image.cols; k++) {
@@ -80,9 +77,15 @@ vector<Mat> FilterProcessor::getTextonsVector(Mat centers, Mat kernels) {
 
 vector<Mat> FilterProcessor::mapPixelToTexton(Mat image, Mat vectors, Mat labels) {
     vector<Mat> result;
+    int type;
+    if (image.channels() == 1) {
+        type = CV_8U;
+    } else {
+        type = CV_8UC3;
+    }
 
     for (int i = 0; i < Constants::CLUSTER_NUMBER; i++) {
-        Mat mat = Mat::ones(image.rows, image.cols, CV_8UC3);
+        Mat mat = Mat::ones(image.rows, image.cols, type);
         result.push_back(mat);
     }
 
@@ -98,7 +101,11 @@ vector<Mat> FilterProcessor::mapPixelToTexton(Mat image, Mat vectors, Mat labels
 //                    cluster = k;
 //                }
 //            }
-            result[labels.at<int>(i * image.cols + j)].at<Vec3b>(i, j) = image.at<Vec3b>(i, j);
+            if (image.channels() == 1) {
+                result[labels.at<int>(i * image.cols + j)].at<uchar>(i, j) = image.at<uchar>(i, j);
+            } else {
+                result[labels.at<int>(i * image.cols + j)].at<Vec3b>(i, j) = image.at<Vec3b>(i, j);
+            }
         }
     }
 
