@@ -66,8 +66,8 @@ double ImageUtils::distance(int x, int y, int centerX, int centerY) {
     return (x - centerX)*(x - centerX) + (y - centerY)*(y - centerY);
 }
 
-string ImageUtils::typeToString(int type) {
-  string r;
+std::string ImageUtils::typeToString(int type) {
+  std::string r;
 
   uchar depth = type & CV_MAT_DEPTH_MASK;
   uchar chans = 1 + (type >> CV_CN_SHIFT);

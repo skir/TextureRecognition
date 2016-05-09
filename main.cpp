@@ -9,12 +9,14 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/ml/ml.hpp>
 #include "opencv2/imgproc/imgproc.hpp"
+#include <opencv2/saliency.hpp>
 
 #include "kernels.h"
 #include "filterprocessor.h"
 #include "imageutils.h"
 #include "videoprocessor.h"
 #include "constants.h"
+#include "saliencyFineGrained/staticSaliencyFineGrained.h"
 
 #define CNN_USE_OMP
 
@@ -23,6 +25,8 @@
 using namespace cv;
 using namespace std;
 using namespace tiny_cnn;
+using namespace saliency;
+
 
 network<mse, adagrad> constructCNN(int size);
 void train(network<mse, adagrad> net, Mat vectors, Mat labelsMat);
@@ -39,11 +43,29 @@ int main(int argc, char *argv[])
     namedWindow( "window_name", CV_WINDOW_AUTOSIZE );
 //    namedWindow( "window_name2", CV_WINDOW_AUTOSIZE );
 
-    Mat image = imread(files[0], CV_LOAD_IMAGE_COLOR);//GRAYSCALE);
+    Mat start = imread(files[0], CV_LOAD_IMAGE_GRAYSCALE);
 //    bitwise_not(image, image);        //invert
-    imwrite("image.png", image);
 
-    VideoProcessor* video = new VideoProcessor("/media/d/Dropbox/Camera Uploads/2015-08-09 12.03.42.mp4");//"/media/d/Videos/diploma/DJI00177.MP4");
+    Mat image;
+//    StaticSaliencyFineGrained saliencyGenerator;
+//    saliencyGenerator.computeSaliencyImpl(start, image);    //works only with grayscale
+
+    Ptr<Saliency> saliencyAlgorithm = Saliency::create("SPECTRAL_RESIDUAL");
+    Mat saliencyMap, binaryMap;
+        if( saliencyAlgorithm->computeSaliency( start, image ) )
+        {
+          StaticSaliencySpectralResidual spec;
+          spec.computeSaliency(start, image);
+          spec.computeBinaryMap( image, binaryMap );
+
+          imwrite( "saliency.png", image*100 );
+          imwrite( "saliency_binary.png", binaryMap );
+//          return a.exec();
+        }
+
+    image.convertTo(image, CV_8U);
+    imwrite("image.png", image);
+//    VideoProcessor* video = new VideoProcessor("/media/d/Dropbox/Camera Uploads/2015-08-09 12.03.42.mp4");//"/media/d/Videos/diploma/DJI00177.MP4");
 
     vector<Mat> kernelsVector;
     Mat k = Mat::zeros(Constants::KERNEL_SIZE, Constants::KERNEL_SIZE, CV_64F);
