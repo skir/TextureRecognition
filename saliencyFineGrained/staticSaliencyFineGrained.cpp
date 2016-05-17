@@ -85,8 +85,8 @@ void StaticSaliencyFineGrained::calcIntensityChannel(cv::Mat srcArg, cv::Mat dst
 
     int i;
     int neighborhood;
-    int neighborhoods[] = {3*4, 3*4*2, 3*4*2*2, 7*4, 7*4*2, 7*4*2*2};
-
+    int neighborhoods[] = {9*4, 9*4*2, 9*4*2*2, 13*4, 13*4*2, 13*4*2*2};
+                        //{3*4, 3*4*2, 3*4*2*2, 7*4, 7*4*2, 7*4*2*2};
     for(i=0; i<numScales; i++)
     {
         intensityScaledOn[i] = cv::Mat(cv::Size(srcArg.cols, srcArg.rows), CV_8UC1);
@@ -104,8 +104,8 @@ void StaticSaliencyFineGrained::calcIntensityChannel(cv::Mat srcArg, cv::Mat dst
     }
 
     // smooth pixels at least twice, as done by Frintrop and Itti
-    cv::GaussianBlur( gray, gray, cv::Size( 3, 3 ), 0, 0 );
-    cv::GaussianBlur( gray, gray, cv::Size( 3, 3 ), 0, 0 );
+    cv::GaussianBlur( gray, gray, cv::Size( 29, 29 ), 0, 0 );
+    cv::GaussianBlur( gray, gray, cv::Size( 15, 15 ), 0, 0 );
 
 
     // Calculate integral image, only once.
