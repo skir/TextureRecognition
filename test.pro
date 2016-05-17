@@ -22,7 +22,8 @@ SOURCES += main.cpp \
     kernels.cpp \
     imageutils.cpp \
     videoprocessor.cpp \
-    constants.cpp
+    constants.cpp \
+    mfs.cpp
 
 LIBS += `pkg-config opencv --libs`
 
@@ -31,7 +32,8 @@ HEADERS += \
     kernels.h \
     imageutils.h \
     videoprocessor.h \
-    constants.h
+    constants.h \
+    mfs.h
 
 QMAKE_CXXFLAGS += -fopenmp
 
