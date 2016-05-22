@@ -8,7 +8,7 @@ FilterProcessor::FilterProcessor()
 
 }
 
-void FilterProcessor::filterImage(Mat image, vector<Mat> kernelsVector, OutputArray vectors, OutputArray centers, OutputArray labels) {
+void FilterProcessor::filterImage(Mat image, vector<Mat> kernelsVector, OutputArray vectors, OutputArray centers, InputOutputArray labels) {
 
     Mat dst, dst32;
     Mat vectorsTemp = Mat::zeros(image.cols * image.rows, kernelsVector.size() * image.channels(), CV_32F);    //CV_32F is for weak kmeans

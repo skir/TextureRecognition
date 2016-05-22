@@ -15,7 +15,7 @@ private:
     int frameCounter;
 
 public:
-    VideoProcessor(std::string);
+    VideoProcessor(std::string file);
     bool getNextFrame(cv::OutputArray);
 };
 

@@ -9,9 +9,10 @@ MFS::MFS()
 }
 
 void MFS::coverWithMFS(Mat image, int windowSize, OutputArray vectors, OutputArray centers, InputOutputArray labels) {
-    Mat densities = Mat::zeros(image.cols * image.rows, 26, CV_32F);    //CV_32F is for weak kmeans;
+    Mat densities = Mat::zeros(image.cols * image.rows, Constants::MFS_DIMENSION, CV_32F);    //CV_32F is for weak kmeans;
+    int step = 10;
 #pragma omp parallel for
-    for (int i = 0; i < image.rows; i++) {
+    for (int i = 0; i < image.rows; i += step) {
         int y = i - windowSize / 2;
         int height = windowSize;
         if (y < 0) {
@@ -21,7 +22,7 @@ void MFS::coverWithMFS(Mat image, int windowSize, OutputArray vectors, OutputArr
         if (y + height >= image.rows) {
             height = image.rows - y;
         }
-        for (int j = 0; j < image.cols; j++) {
+        for (int j = 0; j < image.cols; j += step) {
             int width = windowSize;
             int x = j - windowSize / 2;
             if (x < 0) {
@@ -33,8 +34,14 @@ void MFS::coverWithMFS(Mat image, int windowSize, OutputArray vectors, OutputArr
             }
             Mat densityForCurrentWindow = density(image(Rect(x, y, width, height)), 0);
 
-            for (int k = 0; k < densityForCurrentWindow.cols; k++) {
-                densities.at<float>(i*image.cols + j, k) = (float) densityForCurrentWindow.at<double>(0, k);
+            int endI = i + step < image.rows ? i + step : image.rows;
+            int endJ = j + step < image.cols ? j + step : image.cols;
+            for (int s = i; s < endI; s++) {
+                for (int m = j; m < endJ; m++) {
+                    for (int k = 0; k < densityForCurrentWindow.cols; k++) {
+                        densities.at<float>(s*image.cols + m, k) = (float) densityForCurrentWindow.at<double>(0, k);
+                    }
+                }
             }
 
 //            cout<<i<<'\t'<<j<<endl;
@@ -56,9 +63,8 @@ void MFS::coverWithMFS(Mat image, int windowSize, OutputArray vectors, OutputArr
 }
 
 Mat MFS::density(Mat image, int levels) {
-
     int ind_num = 8; //density counting levels
-    int f_num = 26;  //the dimension of MFS
+    int f_num = Constants::MFS_DIMENSION;  //the dimension of MFS
     int ite_num = 8; //Box counting levels
 image.convertTo(image, CV_64F);
     double min, max;
@@ -103,7 +109,13 @@ image.convertTo(image, CV_64F);
     double x = sum(c)[0] / ind_num;
     Mat D = Mat::zeros(image.rows, image.cols, CV_64F);
     for (int i = 0; i < ind_num; i++) {
-        Mat temp = bw[i] - ss;
+        Mat temp = Mat::zeros(bw[i].rows, bw[i].cols, CV_64F);
+        for (int j = 0; j < temp.rows; j++) {
+            for (int k = 0; k < temp.cols; k++) {
+                temp.at<double>(j, k) = bw[i].at<double>(j, k) - ss.at<double>(j, k);
+            }
+        }
+//        temp = bw[i] - ss;
         temp = temp.mul(c.at<double>(0, i) - x);
         D = D + temp;
     }

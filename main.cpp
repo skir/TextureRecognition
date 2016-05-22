@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     namedWindow( "window_name", CV_WINDOW_AUTOSIZE );
 //    namedWindow( "window_name2", CV_WINDOW_AUTOSIZE );
 
-    Mat image = imread(files[0], CV_LOAD_IMAGE_COLOR);//GRAYSCALE);
+    Mat image = imread(files[3], CV_LOAD_IMAGE_GRAYSCALE);
 //    bitwise_not(image, image);        //invert
     imwrite("image.png", image);
 
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     Mat vectors, centers, labels;
 
 //    FilterProcessor::filterImage(image, kernelsVector, vectors, centers, labels);
-    MFS::coverWithMFS(image, 50, vectors, centers, labels);
+    MFS::coverWithMFS(image, 100, vectors, centers, labels);
 
     for (int i = 0; i < centers.rows; i++) {
         for (int j = 0; j < centers.cols; j++) {

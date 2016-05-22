@@ -2,7 +2,7 @@
 
 using namespace cv;
 
-VideoProcessor::VideoProcessor(string fileName) {
+VideoProcessor::VideoProcessor(std::string fileName) {
     this->video = new VideoCapture();
     video->open(fileName);
     frameCounter = video->get(CV_CAP_PROP_FRAME_COUNT);
