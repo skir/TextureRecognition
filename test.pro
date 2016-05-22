@@ -22,17 +22,25 @@ SOURCES += main.cpp \
     kernels.cpp \
     imageutils.cpp \
     videoprocessor.cpp \
-    constants.cpp
+    constants.cpp \
+    mfs.cpp
 
 LIBS += `pkg-config opencv --libs`
+#LIBS += /usr/local/lib/libopencv_saliency.so.3.1.0
 
 HEADERS += \
     filterprocessor.h \
     kernels.h \
     imageutils.h \
     videoprocessor.h \
-    constants.h
+    constants.h \
+    mfs.h
 
 QMAKE_CXXFLAGS += -fopenmp
 
 LIBS += -fopenmp
+
+unix:!macx: LIBS += -L$$PWD/../../../../../../../../../../usr/local/lib/ -lopencv_saliency
+
+INCLUDEPATH += $$PWD/../../../../../../../../../../usr/local/include/opencv2/saliency
+DEPENDPATH += $$PWD/../../../../../../../../../../usr/local/include/opencv2/saliency

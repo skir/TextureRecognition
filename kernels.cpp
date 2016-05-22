@@ -104,7 +104,7 @@ double Kernels::kernelRadialFunction(double x, double y, double sigma1, double s
             (1 - (x*x + y*y) / (2 * sigma1 * sigma1));
 }
 
-Mat Kernels::convertVectorToMat(vector<Mat> kernelsVector) {
+Mat Kernels::convertVectorToMat(std::vector<Mat> kernelsVector) {
     Mat kernels(kernelsVector[0].rows * kernelsVector[0].cols, kernelsVector.size(), CV_64F);
     for ( int i = 0; i < kernelsVector.size(); i++) {
         int s = 0;

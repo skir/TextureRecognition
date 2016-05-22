@@ -19,7 +19,7 @@ class FilterProcessor
 public:
     FilterProcessor();
 
-    static void filterImage(Mat image, vector<Mat> kernel, OutputArray vectors, OutputArray centers, OutputArray labels);
+    static void filterImage(Mat image, vector<Mat> kernels, OutputArray vectors, OutputArray centers, InputOutputArray labels);
     static float distance(Mat vector1, Mat vector2);
     static vector<Mat> mapPixelToTexton(Mat image, Mat vectors, Mat labels);
     static vector<Mat> getTextonsVector(Mat centers, Mat kernels);

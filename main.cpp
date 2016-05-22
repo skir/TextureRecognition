@@ -15,6 +15,7 @@
 #include "imageutils.h"
 #include "videoprocessor.h"
 #include "constants.h"
+#include "mfs.h"
 
 #define CNN_USE_OMP
 
@@ -39,41 +40,42 @@ int main(int argc, char *argv[])
     namedWindow( "window_name", CV_WINDOW_AUTOSIZE );
 //    namedWindow( "window_name2", CV_WINDOW_AUTOSIZE );
 
-    Mat image = imread(files[0], CV_LOAD_IMAGE_COLOR);//GRAYSCALE);
+    Mat image = imread(files[3], CV_LOAD_IMAGE_GRAYSCALE);
 //    bitwise_not(image, image);        //invert
     imwrite("image.png", image);
 
     VideoProcessor* video = new VideoProcessor("/media/d/Dropbox/Camera Uploads/2015-08-09 12.03.42.mp4");//"/media/d/Videos/diploma/DJI00177.MP4");
 
-    vector<Mat> kernelsVector;
-    Mat k = Mat::zeros(Constants::KERNEL_SIZE, Constants::KERNEL_SIZE, CV_64F);
-    for (int i = 0; i < 4; i++) {
-        k = Kernels::kernel(Constants::KERNEL_SIZE, 0, SIGMAS[i], 0, Kernels::Radial);
-        kernelsVector.push_back(k);
-        imwrite("kernel00" + to_string(i) + ".png", k *1000);
-    }
-    for (int i = 0; i < 4; i++) {
-        k = Kernels::kernel(Constants::KERNEL_SIZE, 0, 3 * SIGMAS[i], 0, Kernels::Radial);
-        kernelsVector.push_back(k);
-        imwrite("kernel01" + to_string(i) + ".png", k *1000);
-    }
-    for (int j = 0; j < 3; j++) {
-        for (int i = 0; i < 6; i++){
-            k = Kernels::kernel(Constants::KERNEL_SIZE, i * M_PI / 6, SIGMAS[j], 3 * SIGMAS[j], Kernels::Even);   //[1, 3]; [1.5, 2]
-            kernelsVector.push_back(k);
-            imwrite("kernel1" + to_string(j) + to_string(i) + ".png", k * 1000);
-        }
-        for (int i = 0; i < 6; i++){
-            k = Kernels::kernel(Constants::KERNEL_SIZE, i * M_PI / 6, SIGMAS[j], 3 * SIGMAS[j], Kernels::Odd);
-            kernelsVector.push_back(k);
-            imwrite("kernel2" + to_string(j) + to_string(i) + ".png", k *1000);
-        }
-    }
+//    vector<Mat> kernelsVector;
+//    Mat k = Mat::zeros(Constants::KERNEL_SIZE, Constants::KERNEL_SIZE, CV_64F);
+//    for (int i = 0; i < 4; i++) {
+//        k = Kernels::kernel(Constants::KERNEL_SIZE, 0, SIGMAS[i], 0, Kernels::Radial);
+//        kernelsVector.push_back(k);
+//        imwrite("kernel00" + to_string(i) + ".png", k *1000);
+//    }
+//    for (int i = 0; i < 4; i++) {
+//        k = Kernels::kernel(Constants::KERNEL_SIZE, 0, 3 * SIGMAS[i], 0, Kernels::Radial);
+//        kernelsVector.push_back(k);
+//        imwrite("kernel01" + to_string(i) + ".png", k *1000);
+//    }
+//    for (int j = 0; j < 3; j++) {
+//        for (int i = 0; i < 6; i++){
+//            k = Kernels::kernel(Constants::KERNEL_SIZE, i * M_PI / 6, SIGMAS[j], 3 * SIGMAS[j], Kernels::Even);   //[1, 3]; [1.5, 2]
+//            kernelsVector.push_back(k);
+//            imwrite("kernel1" + to_string(j) + to_string(i) + ".png", k * 1000);
+//        }
+//        for (int i = 0; i < 6; i++){
+//            k = Kernels::kernel(Constants::KERNEL_SIZE, i * M_PI / 6, SIGMAS[j], 3 * SIGMAS[j], Kernels::Odd);
+//            kernelsVector.push_back(k);
+//            imwrite("kernel2" + to_string(j) + to_string(i) + ".png", k *1000);
+//        }
+//    }
 //M_PI / 2 - M_PI / 18 + i * M_PI / 18
 
     Mat vectors, centers, labels;
 
-    FilterProcessor::filterImage(image, kernelsVector, vectors, centers, labels);
+//    FilterProcessor::filterImage(image, kernelsVector, vectors, centers, labels);
+    MFS::coverWithMFS(image, 100, vectors, centers, labels);
 
     for (int i = 0; i < centers.rows; i++) {
         for (int j = 0; j < centers.cols; j++) {
@@ -101,9 +103,9 @@ int main(int argc, char *argv[])
         imwrite("sub" + to_string(i) + ".png", ImageUtils::substract(image, maps[i]));
     }
 
-    Mat kernels = Kernels::convertVectorToMat(kernelsVector);
+//    Mat kernels = Kernels::convertVectorToMat(kernelsVector);
 //    cout<<typeToString(centers.type()) + " " + typeToString(kernels.type())<<endl;
-    FilterProcessor::getTextonsVector(centers, kernels.inv(DECOMP_SVD));
+//    FilterProcessor::getTextonsVector(centers, kernels.inv(DECOMP_SVD));
 
     return a.exec();
 }

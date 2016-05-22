@@ -16,7 +16,7 @@ public:
     static double getAverageValue(Mat image);
     static bool radius(Mat source, Mat sub, int row, int col, int radius);
     static double distance(int x, int y, int centerX, int centerY);
-    static string typeToString(int type);
+    static std::string typeToString(int type);
 };
 
 #endif // IMAGEUTILS_H
