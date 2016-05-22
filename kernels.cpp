@@ -20,13 +20,13 @@ Mat Kernels::kernel(int size, double angle, double sigma1, double sigma2, Functi
                     k.at<double>(i, j) = kernelOddFunction(x * cos(angle) - y * sin(angle), x * sin(angle) + y * cos(angle) , sigma1, sigma2);
                     break;
                 case Radial:
-                    k.at<double>(i, j) = 0.25 * kernelRadialFunction(x, y, sigma1, sigma2);
+                    k.at<double>(i, j) = kernelRadialFunction(x, y, sigma1, sigma2);
                     break;
             }
         }
     }
 
-    k = normalization(k);
+//    k = normalization(k);
 
     return k;
 }

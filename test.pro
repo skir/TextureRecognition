@@ -23,6 +23,7 @@ SOURCES += main.cpp \
     imageutils.cpp \
     videoprocessor.cpp \
     constants.cpp \
+    saliencyFineGrained/staticSaliencyFineGrained.cpp \
     mfs.cpp
 
 LIBS += `pkg-config opencv --libs`
@@ -34,6 +35,7 @@ HEADERS += \
     imageutils.h \
     videoprocessor.h \
     constants.h \
+    saliencyFineGrained/staticSaliencyFineGrained.h \
     mfs.h
 
 QMAKE_CXXFLAGS += -fopenmp
